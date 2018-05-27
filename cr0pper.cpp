@@ -130,17 +130,18 @@ int Cr0pper::validateY(int index, int value) {
 }
 
 void Cr0pper::imageClick(QPointF pos) {
-	int index = ui->imageFiles->currentRow();
-	int value;
-	m_currentSide = IMAGE_NONE;
-	if ( isLeft(index, pos) || isRight(index, pos) ) {
-		value = validateX(index, pos.x());
-		m_vertical->setX(value);
+	m_currentSide = (ImageSide) ((int)m_currentSide + 1);
+	switch (m_currentSide) {
+	case IMAGE_LEFT:
+	case IMAGE_RIGHT:
 		m_vertical->show();
-	} else if ( isTop(index, pos) || isBottom(index, pos) ){
-		value = validateY(index, pos.y());
-		m_horizontal->setY(value);
+		m_vertical->setX(pos.x());
+		break;
+	case IMAGE_TOP:
+	case IMAGE_BOTTOM:
 		m_horizontal->show();
+		m_vertical->setY(pos.y());
+		break;
 	}
 }
 
@@ -198,6 +199,10 @@ void Cr0pper::imageRelease(QPointF pos) {
 		m_horizontal->hide();
 		break;
 	}
+	if ( IMAGE_BOTTOM == m_currentSide ) {
+		m_currentSide = IMAGE_NONE;
+		// Load next image
+	}
 }
 
 void Cr0pper::on_loadFiles_clicked()
@@ -241,6 +246,7 @@ void Cr0pper::on_imageFiles_currentRowChanged(int index)
 						  img->height()/2.0 - img->height()/CROP_THRESHOLD_DIVISOR,
 						  2 * img->width()/CROP_THRESHOLD_DIVISOR,
 						  2 * img->height()/CROP_THRESHOLD_DIVISOR);
+	m_currentSide = IMAGE_NONE;
 }
 
 void Cr0pper::on_scale_valueChanged(double scale)

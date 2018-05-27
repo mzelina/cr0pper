@@ -23,8 +23,8 @@ public:
 	~Cr0pper();
 	enum ImageSide {
 		IMAGE_NONE,
-		IMAGE_TOP,
 		IMAGE_LEFT,
+		IMAGE_TOP,
 		IMAGE_RIGHT,
 		IMAGE_BOTTOM
 	};
