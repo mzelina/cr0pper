@@ -37,24 +37,27 @@ private slots:
 	void imageMove(QPointF pos);
 	void imageRelease(QPointF pos);
 private:
+	bool isLeft(int index, QPointF pos);
+	bool isRight(int index, QPointF pos);
+	bool isTop(int index, QPointF pos);
+	bool isBottom(int index, QPointF pos);
+	int validateX(int index, int value);
+	int validateY(int index, int value);
+	void processCropRectangle(QPointF pos);
+	void updateStats();
+
 	Ui::Cr0pper *ui;
 	QList<QRect *> m_crops;
 	QList<QImage *> m_images;
 	QGraphicsItem *m_line;
 	Cr0pperScene *m_scene;
 	ImageSide m_currentSide;
-	bool isLeft(int index, QPointF pos);
-	bool isRight(int index, QPointF pos);
-	bool isTop(int index, QPointF pos);
-	bool isBottom(int index, QPointF pos);
-
 	QGraphicsPixmapItem *m_lastImage;
-	QGraphicsRectItem *m_lastRect;
+	QGraphicsRectItem *m_originalRect;
+	QGraphicsRectItem *m_boundsRect;
+	QGraphicsRectItem *m_cropRect;
 	QGraphicsLineItem *m_horizontal;
 	QGraphicsLineItem *m_vertical;
-	int validateX(int index, int value);
-	int validateY(int index, int value);
-	void updateStats();
 };
 
 #endif // CROPPER_H

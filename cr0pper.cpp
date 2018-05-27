@@ -4,10 +4,12 @@
 #include <QDebug>
 #include <QFileDialog>
 
+#define CROP_THRESHOLD_DIVISOR (8.0)
+
 Cr0pper::Cr0pper(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::Cr0pper),
-	m_lastImage(0), m_lastRect(0)
+	m_lastImage(0)
 {
 	ui->setupUi(this);
 
@@ -15,6 +17,7 @@ Cr0pper::Cr0pper(QWidget *parent) :
 	ui->image->setScene(m_scene);
 
 	QPen *red = new QPen(QBrush(Qt::red), 5.0);
+	QPen *blue = new QPen(QBrush(Qt::red), 1.0, Qt::DashDotDotLine);
 
 	m_horizontal = new QGraphicsLineItem(-20000,0,20000,0);
 	m_horizontal->setZValue(1000);
@@ -26,6 +29,18 @@ Cr0pper::Cr0pper(QWidget *parent) :
 	m_vertical->hide();
 	m_vertical->setPen(*red);
 	m_scene->addItem(m_vertical);
+
+	m_boundsRect = new QGraphicsRectItem();
+	m_boundsRect->setPen(*blue);
+	m_scene->addItem(m_boundsRect);
+
+	m_originalRect = new QGraphicsRectItem();
+	m_originalRect->setPen(QPen(QBrush(Qt::black), 1.0, Qt::SolidLine));
+	m_scene->addItem(m_originalRect);
+
+	m_cropRect = new QGraphicsRectItem();
+	m_cropRect->setPen(QPen(QBrush(Qt::black), 1.0, Qt::DashLine));
+	m_scene->addItem(m_cropRect);
 
 	connect(m_scene, &Cr0pperScene::mouseDown,
 			this, &Cr0pper::imageClick);
@@ -40,10 +55,16 @@ Cr0pper::~Cr0pper()
 	delete ui;
 }
 
+/**
+ * @brief Checks to see if we are adjusting the left side
+ * @param index
+ * @param pos
+ * @return
+ */
 bool Cr0pper::isLeft(int index, QPointF pos) {
 	QImage *img = m_images.at(index);
 	int yMid = img->height()/2.0;
-	int yDelta = img->height()/8.0;
+	int yDelta = img->height()/CROP_THRESHOLD_DIVISOR;
 	if ( pos.x() < img->width()/2.0 &&
 		 pos.y() > (yMid - yDelta) &&
 		 pos.y() < (yMid + yDelta) ) {
@@ -56,7 +77,7 @@ bool Cr0pper::isLeft(int index, QPointF pos) {
 bool Cr0pper::isRight(int index, QPointF pos) {
 	QImage *img = m_images.at(index);
 	int yMid = img->height()/2.0;
-	int yDelta = img->height()/8.0;
+	int yDelta = img->height()/CROP_THRESHOLD_DIVISOR;
 	if ( pos.x() > img->width()/2.0 &&
 		 pos.y() > (yMid - yDelta) &&
 		 pos.y() < (yMid + yDelta) ) {
@@ -69,7 +90,7 @@ bool Cr0pper::isRight(int index, QPointF pos) {
 bool Cr0pper::isTop(int index, QPointF pos) {
 	QImage *img = m_images.at(index);
 	int xMid = img->width()/2.0;
-	int xDelta = img->width()/8.0;
+	int xDelta = img->width()/CROP_THRESHOLD_DIVISOR;
 	if ( pos.y() < img->height()/2.0 &&
 		 pos.x() > (xMid - xDelta) &&
 		 pos.x() < (xMid + xDelta) ) {
@@ -82,7 +103,7 @@ bool Cr0pper::isTop(int index, QPointF pos) {
 bool Cr0pper::isBottom(int index, QPointF pos) {
 	QImage *img = m_images.at(index);
 	int xMid = img->width()/2.0;
-	int xDelta = img->width()/8.0;
+	int xDelta = img->width()/CROP_THRESHOLD_DIVISOR;
 	if ( pos.y() > img->height()/2.0 &&
 		 pos.x() > (xMid - xDelta) &&
 		 pos.x() < (xMid + xDelta) ) {
@@ -123,7 +144,7 @@ void Cr0pper::imageClick(QPointF pos) {
 	}
 }
 
-void Cr0pper::imageMove(QPointF pos) {
+void Cr0pper::processCropRectangle(QPointF pos) {
 	int index = ui->imageFiles->currentRow();
 	int value;
 	switch (m_currentSide) {
@@ -151,6 +172,10 @@ void Cr0pper::imageMove(QPointF pos) {
 	updateStats();
 }
 
+void Cr0pper::imageMove(QPointF pos) {
+	processCropRectangle(pos);
+}
+
 void Cr0pper::updateStats() {
 	int index = ui->imageFiles->currentRow();
 	QRect rect = *m_crops.at(index);
@@ -158,9 +183,11 @@ void Cr0pper::updateStats() {
 	ui->top->setText(QString::number((int)rect.top()));
 	ui->width->setText(QString::number((int)rect.width()));
 	ui->height->setText(QString::number((int)rect.height()));
+	m_cropRect->setRect(rect);
 }
 
 void Cr0pper::imageRelease(QPointF pos) {
+	processCropRectangle(pos);
 	switch (m_currentSide) {
 	case IMAGE_LEFT:
 	case IMAGE_RIGHT:
@@ -171,9 +198,6 @@ void Cr0pper::imageRelease(QPointF pos) {
 		m_horizontal->hide();
 		break;
 	}
-	int index = ui->imageFiles->currentRow();
-	m_lastRect->setRect(*m_crops.at(index));
-	updateStats();
 }
 
 void Cr0pper::on_loadFiles_clicked()
@@ -199,12 +223,9 @@ void Cr0pper::on_imageFiles_currentRowChanged(int index)
 		m_scene->removeItem(m_lastImage);
 		m_lastImage = 0;
 	}
-	if ( m_lastRect ) {
-		m_scene->removeItem(m_lastRect);
-		m_lastRect = 0;
-	}
 
-	QPixmap p = QPixmap::fromImage(*m_images.at(index)); // load pixmap
+	QImage *img = m_images.at(index);
+	QPixmap p = QPixmap::fromImage(*img); // load pixmap
 	// get label dimensions
 	int w = ui->image->width();
 	int h = ui->image->height();
@@ -214,7 +235,12 @@ void Cr0pper::on_imageFiles_currentRowChanged(int index)
 
 	// set a scaled pixmap to a w x h window keeping its aspect ratio
 	m_lastImage = m_scene->addPixmap(p);
-	m_lastRect = m_scene->addRect(*m_crops.at(index));
+	m_cropRect->setRect(*m_crops.at(index));
+	m_originalRect->setRect(img->rect());
+	m_boundsRect->setRect(img->width()/2.0 - img->width()/CROP_THRESHOLD_DIVISOR,
+						  img->height()/2.0 - img->height()/CROP_THRESHOLD_DIVISOR,
+						  2 * img->width()/CROP_THRESHOLD_DIVISOR,
+						  2 * img->height()/CROP_THRESHOLD_DIVISOR);
 }
 
 void Cr0pper::on_scale_valueChanged(double scale)
