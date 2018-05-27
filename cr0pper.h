@@ -8,6 +8,8 @@
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 
+class Cr0pperScene;
+
 namespace Ui {
 class Cr0pper;
 }
@@ -19,28 +21,40 @@ class Cr0pper : public QMainWindow
 public:
 	explicit Cr0pper(QWidget *parent = 0);
 	~Cr0pper();
+	enum ImageSide {
+		IMAGE_NONE,
+		IMAGE_TOP,
+		IMAGE_LEFT,
+		IMAGE_RIGHT,
+		IMAGE_BOTTOM
+	};
 protected slots:
-	void mousePressEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
 private slots:
 	void on_loadFiles_clicked();
 	void on_imageFiles_currentRowChanged(int currentRow);
 	void on_scale_valueChanged(double arg1);
-
+	void imageClick(QPointF pos);
+	void imageMove(QPointF pos);
+	void imageRelease(QPointF pos);
 private:
 	Ui::Cr0pper *ui;
-	QList<QRect> m_crops;
+	QList<QRect *> m_crops;
 	QList<QImage *> m_images;
 	QGraphicsItem *m_line;
-	QGraphicsScene *m_scene;
-	bool isLeft(QPoint pos);
-	bool isRight(QPoint pos);
+	Cr0pperScene *m_scene;
+	ImageSide m_currentSide;
+	bool isLeft(int index, QPointF pos);
+	bool isRight(int index, QPointF pos);
+	bool isTop(int index, QPointF pos);
+	bool isBottom(int index, QPointF pos);
 
-	QGraphicsItem *m_lastImage;
-	QGraphicsItem *m_lastRect;
+	QGraphicsPixmapItem *m_lastImage;
+	QGraphicsRectItem *m_lastRect;
 	QGraphicsLineItem *m_horizontal;
 	QGraphicsLineItem *m_vertical;
+	int validateX(int index, int value);
+	int validateY(int index, int value);
+	void updateStats();
 };
 
 #endif // CROPPER_H
