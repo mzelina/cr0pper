@@ -1,33 +1,36 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "cr0pper.h"
+#include "ui_cr0pper.h"
 #include <QDebug>
 #include <QFileDialog>
 
-MainWindow::MainWindow(QWidget *parent) :
+Cr0pper::Cr0pper(QWidget *parent) :
 	QMainWindow(parent),
-	ui(new Ui::MainWindow),
+	ui(new Ui::Cr0pper),
 	m_lastImage(0), m_lastRect(0)
 {
 	ui->setupUi(this);
 
 	m_scene = new QGraphicsScene();
 	ui->image->setScene(m_scene);
+
+	m_horizontal = new QGraphicsLineItem(-20000,0,20000,0);
+	m_vertical = new QGraphicsLineItem(-20000,0,20000,0);
 }
 
-MainWindow::~MainWindow()
+Cr0pper::~Cr0pper()
 {
 	delete ui;
 }
 
-bool MainWindow::isLeft(QPoint pos) {
+bool Cr0pper::isLeft(QPoint pos) {
 	return true;
 }
 
-bool MainWindow::isRight(QPoint pos) {
+bool Cr0pper::isRight(QPoint pos) {
 	return true;
 }
 
-void MainWindow::mousePressEvent(QMouseEvent *event)
+void Cr0pper::mousePressEvent(QMouseEvent *event)
 {
 	int index = ui->imageFiles->currentRow();
 	if ( index < 0 ) { return; }
@@ -40,13 +43,13 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 	}
 }
 
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
+void Cr0pper::mouseMoveEvent(QMouseEvent *event)
 {
 	int index = ui->imageFiles->currentRow();
 	if ( index < 0 ) { return; }
 }
 
-void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+void Cr0pper::mouseReleaseEvent(QMouseEvent *event)
 {
 	// rubberBand->hide();
 	int index = ui->imageFiles->currentRow();
@@ -55,7 +58,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 	// and QRect::contains().
 }
 
-void MainWindow::on_loadFiles_clicked()
+void Cr0pper::on_loadFiles_clicked()
 {
 	QFileDialog dlg;
 	dlg.setFileMode(QFileDialog::ExistingFiles);
@@ -69,7 +72,7 @@ void MainWindow::on_loadFiles_clicked()
 	}
 }
 
-void MainWindow::on_imageFiles_currentRowChanged(int index)
+void Cr0pper::on_imageFiles_currentRowChanged(int index)
 {
 //	m_rubberBands.at(index)->setGeometry(QRect(m_origins.at(0), QSize()));
 	qDebug() << "on_imageFiles_currentRowChanged" << index;
@@ -96,7 +99,7 @@ void MainWindow::on_imageFiles_currentRowChanged(int index)
 	m_lastRect = m_scene->addRect(m_crops.at(index));
 }
 
-void MainWindow::on_scale_valueChanged(double scale)
+void Cr0pper::on_scale_valueChanged(double scale)
 {
 	ui->image->setTransform(QTransform().scale(scale, scale));
 }

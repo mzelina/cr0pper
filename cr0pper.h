@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef CROPPER_H
+#define CROPPER_H
 
 #include <QMainWindow>
 #include <QMouseEvent>
@@ -9,16 +9,16 @@
 #include <QGraphicsScene>
 
 namespace Ui {
-class MainWindow;
+class Cr0pper;
 }
 
-class MainWindow : public QMainWindow
+class Cr0pper : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
+	explicit Cr0pper(QWidget *parent = 0);
+	~Cr0pper();
 protected slots:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
@@ -29,7 +29,7 @@ private slots:
 	void on_scale_valueChanged(double arg1);
 
 private:
-	Ui::MainWindow *ui;
+	Ui::Cr0pper *ui;
 	QList<QRect> m_crops;
 	QList<QImage *> m_images;
 	QGraphicsItem *m_line;
@@ -39,6 +39,8 @@ private:
 
 	QGraphicsItem *m_lastImage;
 	QGraphicsItem *m_lastRect;
+	QGraphicsLineItem *m_horizontal;
+	QGraphicsLineItem *m_vertical;
 };
 
-#endif // MAINWINDOW_H
+#endif // CROPPER_H

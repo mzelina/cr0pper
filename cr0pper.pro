@@ -25,10 +25,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        cr0pper.cpp
 
 HEADERS += \
-        mainwindow.h
+        cr0pper.h
 
 FORMS += \
-        mainwindow.ui
+        cr0pper.ui
