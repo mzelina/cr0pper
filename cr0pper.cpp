@@ -55,64 +55,6 @@ Cr0pper::~Cr0pper()
 	delete ui;
 }
 
-/**
- * @brief Checks to see if we are adjusting the left side
- * @param index
- * @param pos
- * @return
- */
-bool Cr0pper::isLeft(int index, QPointF pos) {
-	QImage *img = m_images.at(index);
-	int yMid = img->height()/2.0;
-	int yDelta = img->height()/CROP_THRESHOLD_DIVISOR;
-	if ( pos.x() < img->width()/2.0 &&
-		 pos.y() > (yMid - yDelta) &&
-		 pos.y() < (yMid + yDelta) ) {
-		m_currentSide = IMAGE_LEFT;
-		return true;
-	}
-	return false;
-}
-
-bool Cr0pper::isRight(int index, QPointF pos) {
-	QImage *img = m_images.at(index);
-	int yMid = img->height()/2.0;
-	int yDelta = img->height()/CROP_THRESHOLD_DIVISOR;
-	if ( pos.x() > img->width()/2.0 &&
-		 pos.y() > (yMid - yDelta) &&
-		 pos.y() < (yMid + yDelta) ) {
-		m_currentSide = IMAGE_RIGHT;
-		return true;
-	}
-	return false;
-}
-
-bool Cr0pper::isTop(int index, QPointF pos) {
-	QImage *img = m_images.at(index);
-	int xMid = img->width()/2.0;
-	int xDelta = img->width()/CROP_THRESHOLD_DIVISOR;
-	if ( pos.y() < img->height()/2.0 &&
-		 pos.x() > (xMid - xDelta) &&
-		 pos.x() < (xMid + xDelta) ) {
-		m_currentSide = IMAGE_TOP;
-		return true;
-	}
-	return false;
-}
-
-bool Cr0pper::isBottom(int index, QPointF pos) {
-	QImage *img = m_images.at(index);
-	int xMid = img->width()/2.0;
-	int xDelta = img->width()/CROP_THRESHOLD_DIVISOR;
-	if ( pos.y() > img->height()/2.0 &&
-		 pos.x() > (xMid - xDelta) &&
-		 pos.x() < (xMid + xDelta) ) {
-		m_currentSide = IMAGE_BOTTOM;
-		return true;
-	}
-	return false;
-}
-
 int Cr0pper::validateX(int index, int value) {
 	if ( value < 0 ) { value = 0; }
 	else if ( value > m_images.at(index)->width() ) {
@@ -131,6 +73,7 @@ int Cr0pper::validateY(int index, int value) {
 
 void Cr0pper::imageClick(QPointF pos) {
 	m_currentSide = (ImageSide) ((int)m_currentSide + 1);
+	processCropRectangle(pos);
 	switch (m_currentSide) {
 	case IMAGE_LEFT:
 	case IMAGE_RIGHT:

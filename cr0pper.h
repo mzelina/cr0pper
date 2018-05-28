@@ -37,10 +37,6 @@ private slots:
 	void imageMove(QPointF pos);
 	void imageRelease(QPointF pos);
 private:
-	bool isLeft(int index, QPointF pos);
-	bool isRight(int index, QPointF pos);
-	bool isTop(int index, QPointF pos);
-	bool isBottom(int index, QPointF pos);
 	int validateX(int index, int value);
 	int validateY(int index, int value);
 	void processCropRectangle(QPointF pos);
