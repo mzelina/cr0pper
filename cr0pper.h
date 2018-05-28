@@ -36,6 +36,8 @@ private slots:
 	void imageClick(QPointF pos);
 	void imageMove(QPointF pos);
 	void imageRelease(QPointF pos);
+	void on_saveFiles_clicked();
+
 private:
 	int validateX(int index, int value);
 	int validateY(int index, int value);

@@ -3,6 +3,7 @@
 #include "cr0pperscene.h"
 #include <QDebug>
 #include <QFileDialog>
+#include <QDir>
 
 #define CROP_THRESHOLD_DIVISOR (8.0)
 
@@ -15,6 +16,7 @@ Cr0pper::Cr0pper(QWidget *parent) :
 
 	m_scene = new Cr0pperScene();
 	ui->image->setScene(m_scene);
+	ui->image->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 
 	QPen *red = new QPen(QBrush(Qt::red), 5.0);
 	QPen *blue = new QPen(QBrush(Qt::red), 1.0, Qt::DashDotDotLine);
@@ -41,6 +43,9 @@ Cr0pper::Cr0pper(QWidget *parent) :
 	m_cropRect = new QGraphicsRectItem();
 	m_cropRect->setPen(QPen(QBrush(Qt::black), 1.0, Qt::DashLine));
 	m_scene->addItem(m_cropRect);
+
+	QDir curDir(".");
+	curDir.mkdir("cropped");
 
 	connect(m_scene, &Cr0pperScene::mouseDown,
 			this, &Cr0pper::imageClick);
@@ -195,4 +200,19 @@ void Cr0pper::on_imageFiles_currentRowChanged(int index)
 void Cr0pper::on_scale_valueChanged(double scale)
 {
 	ui->image->setTransform(QTransform().scale(scale, scale));
+}
+
+void Cr0pper::on_saveFiles_clicked()
+{
+	QList<QListWidgetItem *> items = ui->imageFiles->findItems("*", Qt::MatchWildcard);
+	int index = 0;
+	QImage croppedImage;
+	foreach (QListWidgetItem *item, items) {
+		QFileInfo file(item->text());
+		croppedImage = m_images.at(index)->copy(*m_crops.at(index));
+		QString newFile = file.absolutePath() + "/cropped/" + file.baseName() + ".png";
+		bool result = croppedImage.save(newFile, 0, -1);
+		qDebug() << newFile << result;
+		index++;
+	}
 }
